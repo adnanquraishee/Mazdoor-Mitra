@@ -2,18 +2,25 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const isValidSupabaseUrl = /^https?:\/\/.+/.test(supabaseUrl);
+const fallbackSupabaseUrl = 'https://example.supabase.co';
+const fallbackSupabaseAnonKey = 'missing-supabase-anon-key';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('Supabase environment variables are not set. Please configure .env.local');
+if (!isValidSupabaseUrl || !supabaseAnonKey) {
+    console.warn('Supabase environment variables are missing or invalid. Please configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabase = createClient(
+    isValidSupabaseUrl ? supabaseUrl : fallbackSupabaseUrl,
+    supabaseAnonKey || fallbackSupabaseAnonKey,
+    {
     auth: {
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: true,
     },
-});
+    }
+);
 
 // Helper functions for authentication
 export const auth = {
